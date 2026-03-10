@@ -30,7 +30,7 @@ app.post("/api/chat", async (req, res) => {
         Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile", // free & powerful
+        model: "llama-3.1-8b-instant", // free & powerful
         messages: [
           { role: "system", content: req.body.system },
           ...req.body.messages,
