@@ -16,6 +16,10 @@ app.use(cors());
 app.use(express.static(__dirname)); // serves all files in folder
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
 app.post("/api/chat", async (req, res) => {
   const response = await fetch(
     "https://api.groq.com/openai/v1/chat/completions",
