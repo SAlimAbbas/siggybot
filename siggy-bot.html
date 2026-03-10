@@ -1565,7 +1565,7 @@ RESPONSE STYLE:
 
         try {
           const [response] = await Promise.all([
-            fetch("http://localhost:3000/api/chat", {
+            fetch("https://siggybot.onrender.com/api/chat", {
               // ← your groq proxy
               method: "POST",
               headers: { "Content-Type": "application/json" },
