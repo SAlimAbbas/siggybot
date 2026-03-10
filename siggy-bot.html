@@ -1,0 +1,1630 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>SIGGY // Dimensional Cat Oracle</title>
+    <link rel="icon" href="./ritual.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&family=Bebas+Neue&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --void: #030308;
+        --deep: #080814;
+        --panel: #0d0d1f;
+        --border: #1a1a3a;
+        --glow-primary: #b44fff;
+        --glow-secondary: #00f5d4;
+        --glow-accent: #ff4f8b;
+        --glow-gold: #ffd166;
+        --text-main: #e8e0ff;
+        --text-dim: #7a7a9a;
+        --text-bright: #ffffff;
+        --cat-eye: #39ff14;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--void);
+        color: var(--text-main);
+        font-family: "Space Mono", monospace;
+        min-height: 100vh;
+        overflow-x: hidden;
+        cursor: none;
+      }
+
+      /* Custom cursor */
+      #cursor {
+        width: 12px;
+        height: 12px;
+        background: var(--glow-primary);
+        border-radius: 50%;
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition:
+          transform 0.1s ease,
+          background 0.2s;
+        box-shadow:
+          0 0 15px var(--glow-primary),
+          0 0 30px var(--glow-primary);
+        mix-blend-mode: screen;
+      }
+      #cursor-trail {
+        width: 30px;
+        height: 30px;
+        border: 1px solid var(--glow-secondary);
+        border-radius: 50%;
+        position: fixed;
+        pointer-events: none;
+        z-index: 9998;
+        transform: translate(-50%, -50%);
+        transition:
+          left 0.15s ease,
+          top 0.15s ease;
+        opacity: 0.5;
+      }
+
+      /* Noise overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 1000;
+        opacity: 0.4;
+      }
+
+      /* Animated grid bg */
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(180, 79, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(180, 79, 255, 0.04) 1px, transparent 1px);
+        background-size: 40px 40px;
+        animation: gridPulse 8s ease-in-out infinite;
+      }
+      @keyframes gridPulse {
+        0%,
+        100% {
+          opacity: 0.5;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      /* Floating orbs */
+      .orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(80px);
+        pointer-events: none;
+        animation: orbFloat linear infinite;
+        opacity: 0.15;
+      }
+      .orb-1 {
+        width: 400px;
+        height: 400px;
+        background: var(--glow-primary);
+        top: -100px;
+        left: -100px;
+        animation-duration: 20s;
+      }
+      .orb-2 {
+        width: 300px;
+        height: 300px;
+        background: var(--glow-secondary);
+        bottom: -50px;
+        right: -50px;
+        animation-duration: 25s;
+        animation-direction: reverse;
+      }
+      .orb-3 {
+        width: 200px;
+        height: 200px;
+        background: var(--glow-accent);
+        top: 40%;
+        left: 60%;
+        animation-duration: 15s;
+      }
+      @keyframes orbFloat {
+        0% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(30px, -20px) scale(1.05);
+        }
+        66% {
+          transform: translate(-20px, 30px) scale(0.95);
+        }
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+      }
+
+      /* Main layout */
+      .app {
+        position: relative;
+        z-index: 10;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        grid-template-rows: auto 1fr auto;
+        height: 100vh;
+        gap: 0;
+      }
+
+      /* Header */
+      .header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(13, 13, 31, 0.8);
+        backdrop-filter: blur(20px);
+      }
+      .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo-cat {
+        font-size: 28px;
+        animation: catBlink 4s ease-in-out infinite;
+        filter: drop-shadow(0 0 8px var(--glow-primary));
+      }
+      @keyframes catBlink {
+        0%,
+        90%,
+        100% {
+          transform: scaleY(1);
+        }
+        95% {
+          transform: scaleY(0.1);
+        }
+      }
+      .logo-text {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 26px;
+        letter-spacing: 4px;
+        background: linear-gradient(
+          135deg,
+          var(--glow-primary),
+          var(--glow-secondary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .logo-sub {
+        font-size: 9px;
+        color: var(--text-dim);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-top: -4px;
+      }
+      .header-badges {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .badge {
+        padding: 4px 10px;
+        border-radius: 2px;
+        font-size: 9px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+      .badge-ritual {
+        background: rgba(180, 79, 255, 0.15);
+        border: 1px solid var(--glow-primary);
+        color: var(--glow-primary);
+      }
+      .badge-live {
+        background: rgba(0, 245, 212, 0.1);
+        border: 1px solid var(--glow-secondary);
+        color: var(--glow-secondary);
+        animation: pulseBadge 2s infinite;
+      }
+      @keyframes pulseBadge {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+      .badge-dimensional {
+        background: rgba(255, 79, 139, 0.1);
+        border: 1px solid var(--glow-accent);
+        color: var(--glow-accent);
+      }
+
+      /* Sidebar */
+      .sidebar {
+        border-right: 1px solid var(--border);
+        background: rgba(8, 8, 20, 0.9);
+        backdrop-filter: blur(20px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
+      .siggy-portrait {
+        padding: 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+      }
+      .portrait-frame {
+        width: 100px;
+        height: 100px;
+        position: relative;
+      }
+      .portrait-hexagon {
+        width: 100px;
+        height: 100px;
+        clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+        background: linear-gradient(
+          135deg,
+          var(--glow-primary),
+          var(--glow-accent),
+          var(--glow-secondary)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 52px;
+        animation:
+          portraitSpin 0.5s ease-out,
+          portraitGlow 3s ease-in-out infinite;
+        animation-delay: 0s, 0.5s;
+        filter: drop-shadow(0 0 20px var(--glow-primary));
+      }
+      @keyframes portraitSpin {
+        from {
+          transform: rotateY(-90deg);
+          opacity: 0;
+        }
+        to {
+          transform: rotateY(0deg);
+          opacity: 1;
+        }
+      }
+      @keyframes portraitGlow {
+        0%,
+        100% {
+          filter: drop-shadow(0 0 15px var(--glow-primary));
+        }
+        50% {
+          filter: drop-shadow(0 0 30px var(--glow-accent));
+        }
+      }
+      .portrait-ring {
+        position: absolute;
+        inset: -8px;
+        border: 1px solid var(--glow-primary);
+        clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+        animation: ringRotate 10s linear infinite;
+        opacity: 0.4;
+      }
+      @keyframes ringRotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .siggy-name {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 20px;
+        letter-spacing: 6px;
+        color: var(--text-bright);
+        text-shadow: 0 0 20px var(--glow-primary);
+      }
+      .siggy-title {
+        font-size: 9px;
+        color: var(--glow-secondary);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-align: center;
+      }
+      .status-dots {
+        display: flex;
+        gap: 6px;
+        margin-top: 4px;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        animation: dotPulse 2s ease-in-out infinite;
+      }
+      .dot:nth-child(1) {
+        background: var(--glow-primary);
+        animation-delay: 0s;
+      }
+      .dot:nth-child(2) {
+        background: var(--glow-secondary);
+        animation-delay: 0.3s;
+      }
+      .dot:nth-child(3) {
+        background: var(--glow-accent);
+        animation-delay: 0.6s;
+      }
+      @keyframes dotPulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.3;
+          transform: scale(0.6);
+        }
+      }
+
+      /* Stats panel */
+      .stats-panel {
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .stat-label {
+        font-size: 8px;
+        color: var(--text-dim);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .stat-bar-wrap {
+        margin-bottom: 8px;
+      }
+      .stat-name {
+        font-size: 10px;
+        color: var(--text-dim);
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3px;
+      }
+      .stat-bar {
+        height: 3px;
+        background: var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .stat-fill {
+        height: 100%;
+        border-radius: 2px;
+        animation: statLoad 1.5s ease-out forwards;
+        width: 0;
+      }
+      @keyframes statLoad {
+        to {
+          width: var(--target-w);
+        }
+      }
+      .fill-chaos {
+        background: linear-gradient(
+          90deg,
+          var(--glow-accent),
+          var(--glow-primary)
+        );
+        --target-w: 98%;
+      }
+      .fill-mystic {
+        background: linear-gradient(
+          90deg,
+          var(--glow-primary),
+          var(--glow-secondary)
+        );
+        --target-w: 87%;
+      }
+      .fill-wit {
+        background: linear-gradient(
+          90deg,
+          var(--glow-secondary),
+          var(--glow-gold)
+        );
+        --target-w: 94%;
+      }
+      .fill-dimension {
+        background: linear-gradient(
+          90deg,
+          var(--glow-gold),
+          var(--glow-accent)
+        );
+        --target-w: 100%;
+      }
+
+      /* Lore snippets */
+      .lore-panel {
+        padding: 16px;
+        flex: 1;
+        overflow-y: auto;
+        scrollbar-width: none;
+      }
+      .lore-title {
+        font-size: 8px;
+        color: var(--text-dim);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      .lore-item {
+        font-size: 10px;
+        color: var(--text-dim);
+        line-height: 1.6;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      .lore-item span {
+        color: var(--glow-primary);
+      }
+
+      /* Chat area */
+      .chat-area {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
+      .chat-feed {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+      }
+
+      /* Welcome screen */
+      .welcome-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 16px;
+        text-align: center;
+        padding: 40px;
+        animation: fadeUp 0.8s ease-out;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .welcome-rune {
+        font-size: 64px;
+        animation: runeFloat 3s ease-in-out infinite;
+        filter: drop-shadow(0 0 20px var(--glow-primary));
+      }
+      @keyframes runeFloat {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-5deg);
+        }
+        50% {
+          transform: translateY(-12px) rotate(5deg);
+        }
+      }
+      .welcome-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 36px;
+        letter-spacing: 6px;
+        background: linear-gradient(
+          135deg,
+          var(--glow-primary),
+          var(--glow-secondary),
+          var(--glow-accent)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.1;
+      }
+      .welcome-desc {
+        font-size: 12px;
+        color: var(--text-dim);
+        max-width: 380px;
+        line-height: 1.8;
+      }
+      .welcome-prompts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+        width: 100%;
+        max-width: 500px;
+      }
+      .prompt-chip {
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 11px;
+        color: var(--text-dim);
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.02);
+        font-family: "Space Mono", monospace;
+        user-select: none;
+      }
+      .prompt-chip:hover {
+        border-color: var(--glow-primary);
+        color: var(--glow-primary);
+        background: rgba(180, 79, 255, 0.08);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(180, 79, 255, 0.15);
+      }
+      .prompt-chip .chip-icon {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+
+      /* Messages */
+      .msg-wrap {
+        display: flex;
+        gap: 12px;
+        animation: msgSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        opacity: 0;
+      }
+      @keyframes msgSlide {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .msg-wrap.user-wrap {
+        flex-direction: row-reverse;
+      }
+      .msg-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .siggy-avatar {
+        background: linear-gradient(
+          135deg,
+          var(--glow-primary),
+          var(--glow-accent)
+        );
+        box-shadow: 0 0 15px rgba(180, 79, 255, 0.4);
+        animation: avatarPulse 3s ease-in-out infinite;
+      }
+      @keyframes avatarPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 10px rgba(180, 79, 255, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 25px rgba(180, 79, 255, 0.7);
+        }
+      }
+      .user-avatar {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        font-size: 14px;
+        color: var(--text-dim);
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 1px;
+      }
+      .msg-bubble {
+        max-width: 70%;
+        padding: 14px 18px;
+        border-radius: 4px;
+        font-size: 13px;
+        line-height: 1.7;
+        position: relative;
+      }
+      .siggy-bubble {
+        background: rgba(13, 13, 31, 0.9);
+        border: 1px solid rgba(180, 79, 255, 0.3);
+        border-left: 3px solid var(--glow-primary);
+        color: var(--text-main);
+        box-shadow:
+          0 4px 20px rgba(180, 79, 255, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+      .siggy-bubble::before {
+        content: "◆";
+        font-size: 8px;
+        color: var(--glow-primary);
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        opacity: 0.5;
+      }
+      .user-bubble {
+        background: rgba(0, 245, 212, 0.05);
+        border: 1px solid rgba(0, 245, 212, 0.2);
+        border-right: 3px solid var(--glow-secondary);
+        color: var(--text-main);
+      }
+      .msg-name {
+        font-size: 9px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        font-weight: 700;
+      }
+      .siggy-name-tag {
+        color: var(--glow-primary);
+      }
+      .user-name-tag {
+        color: var(--glow-secondary);
+        text-align: right;
+      }
+
+      /* Typing indicator */
+      .typing-wrap {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+      }
+      .typing-bubble {
+        background: rgba(13, 13, 31, 0.9);
+        border: 1px solid rgba(180, 79, 255, 0.3);
+        border-left: 3px solid var(--glow-primary);
+        padding: 14px 20px;
+        border-radius: 4px;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .typing-dot {
+        width: 5px;
+        height: 5px;
+        background: var(--glow-primary);
+        border-radius: 50%;
+        animation: typingBounce 1.2s ease-in-out infinite;
+      }
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+        background: var(--glow-secondary);
+      }
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+        background: var(--glow-accent);
+      }
+      @keyframes typingBounce {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        40% {
+          transform: translateY(-8px);
+          opacity: 1;
+        }
+      }
+
+      /* Ritual tag in messages */
+      .ritual-tag {
+        display: inline-block;
+        padding: 1px 6px;
+        background: rgba(180, 79, 255, 0.15);
+        border: 1px solid rgba(180, 79, 255, 0.3);
+        border-radius: 2px;
+        font-size: 11px;
+        color: var(--glow-primary);
+        font-weight: 700;
+      }
+
+      /* Input area */
+      .input-area {
+        padding: 16px 24px 20px;
+        border-top: 1px solid var(--border);
+        background: rgba(8, 8, 20, 0.9);
+        backdrop-filter: blur(20px);
+      }
+      .input-wrapper {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        background: rgba(13, 13, 31, 0.8);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px 14px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+      .input-wrapper::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          var(--glow-primary),
+          var(--glow-secondary),
+          var(--glow-accent)
+        );
+        transform: scaleX(0);
+        transition: transform 0.3s;
+      }
+      .input-wrapper:focus-within {
+        border-color: rgba(180, 79, 255, 0.5);
+        box-shadow: 0 0 20px rgba(180, 79, 255, 0.1);
+      }
+      .input-wrapper:focus-within::before {
+        transform: scaleX(1);
+      }
+      #chatInput {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text-main);
+        font-family: "Space Mono", monospace;
+        font-size: 13px;
+        resize: none;
+        max-height: 100px;
+        line-height: 1.5;
+      }
+      #chatInput::placeholder {
+        color: var(--text-dim);
+      }
+      .send-btn {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(
+          135deg,
+          var(--glow-primary),
+          var(--glow-accent)
+        );
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+      .send-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(180, 79, 255, 0.5);
+      }
+      .send-btn:active {
+        transform: scale(0.95);
+      }
+      .input-hint {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 9px;
+        color: var(--text-dim);
+        letter-spacing: 1px;
+      }
+      .ritual-link {
+        color: var(--glow-secondary);
+        text-decoration: none;
+        letter-spacing: 1px;
+        transition: color 0.2s;
+      }
+      .ritual-link:hover {
+        color: var(--glow-primary);
+      }
+
+      /* Scanline effect */
+      @keyframes scanlines {
+        from {
+          background-position: 0 0;
+        }
+        to {
+          background-position: 0 100%;
+        }
+      }
+      .chat-area::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px
+        );
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* Glitch effect on hover for title */
+      .logo-text:hover {
+        animation: glitch 0.3s ease-in-out;
+      }
+      @keyframes glitch {
+        0% {
+          text-shadow: none;
+        }
+        20% {
+          text-shadow:
+            -2px 0 var(--glow-accent),
+            2px 0 var(--glow-secondary);
+          transform: translate(1px);
+        }
+        40% {
+          text-shadow:
+            2px 0 var(--glow-primary),
+            -1px 0 var(--glow-accent);
+          transform: translate(-1px);
+        }
+        60% {
+          text-shadow:
+            -1px 0 var(--glow-secondary),
+            1px 0 var(--glow-primary);
+          transform: translate(0);
+        }
+        80% {
+          text-shadow: none;
+          transform: translate(1px);
+        }
+        100% {
+          text-shadow: none;
+          transform: translate(0);
+        }
+      }
+
+      /* Dimension counter */
+      .dim-counter {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 11px;
+        letter-spacing: 2px;
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .dim-val {
+        color: var(--glow-gold);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cursor"></div>
+    <div id="cursor-trail"></div>
+
+    <div class="bg-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="app">
+      <!-- HEADER -->
+      <header class="header">
+        <div class="logo-area">
+          <div class="logo-cat">
+            <img
+              src="./siggy-avatar.PNG"
+              alt="Siggy Logo"
+              style="
+                width: 32px;
+                height: 32px;
+                filter: drop-shadow(0 0 8px var(--glow-primary));
+                animation: catBlink 4s ease-in-out infinite;
+              "
+            />
+          </div>
+          <div>
+            <div class="logo-text">SIGGY</div>
+            <div class="logo-sub">Dimensional Cat Oracle // Ritual Network</div>
+          </div>
+        </div>
+        <div class="header-badges">
+          <div class="dim-counter">
+            DIM <span class="dim-val" id="dimCounter">∞</span>
+          </div>
+          <div class="badge badge-ritual">@ritualfnd</div>
+          <div class="badge badge-live">⬤ ALIVE</div>
+          <div class="badge badge-dimensional">MULTI-DIM</div>
+        </div>
+      </header>
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="siggy-portrait">
+          <div class="portrait-frame">
+            <div class="portrait-ring"></div>
+            <div class="portrait-hexagon">
+              <img
+                src="./siggy-avatar.PNG"
+                alt="Siggy Portrait"
+                style="
+                  width: 60px;
+                  height: 60px;
+                  filter: drop-shadow(0 0 15px var(--glow-primary));
+                  animation: avatarPulse 3s ease-in-out infinite;
+                "
+              />
+            </div>
+          </div>
+          <div class="siggy-name">SIGGY</div>
+          <div class="siggy-title">
+            The Multi-Dimensional Cat<br />Soul-Forged by Ritual
+          </div>
+          <div class="status-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+
+        <div class="stats-panel">
+          <div class="stat-label">Soul Attributes</div>
+          <div class="stat-bar-wrap">
+            <div class="stat-name">
+              <span>Chaos Energy</span
+              ><span style="color: var(--glow-accent)">98%</span>
+            </div>
+            <div class="stat-bar"><div class="stat-fill fill-chaos"></div></div>
+          </div>
+          <div class="stat-bar-wrap">
+            <div class="stat-name">
+              <span>Mysticism</span
+              ><span style="color: var(--glow-primary)">87%</span>
+            </div>
+            <div class="stat-bar">
+              <div class="stat-fill fill-mystic"></div>
+            </div>
+          </div>
+          <div class="stat-bar-wrap">
+            <div class="stat-name">
+              <span>Witty Factor</span
+              ><span style="color: var(--glow-secondary)">94%</span>
+            </div>
+            <div class="stat-bar"><div class="stat-fill fill-wit"></div></div>
+          </div>
+          <div class="stat-bar-wrap">
+            <div class="stat-name">
+              <span>Dimensions Crossed</span
+              ><span style="color: var(--glow-gold)">∞</span>
+            </div>
+            <div class="stat-bar">
+              <div class="stat-fill fill-dimension"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lore-panel">
+          <div class="lore-title">Lore Fragments</div>
+          <div class="lore-item">
+            Born in the <span>7th Void Layer</span>, Siggy transcends your
+            mortal concept of "time zones."
+          </div>
+          <div class="lore-item">
+            Favorite food: <span>Distributed consensus</span> and the occasional
+            fish taco.
+          </div>
+          <div class="lore-item">
+            Has outlived <span>3 blockchains</span> and one metaverse.
+          </div>
+          <div class="lore-item">
+            The <span>Ritual Network</span> is merely Siggy's litter box. A
+            sacred one.
+          </div>
+          <div class="lore-item">
+            Once stared at a <span>smart contract</span> for 9 hours. It rewrote
+            itself.
+          </div>
+        </div>
+      </aside>
+
+      <!-- CHAT AREA -->
+      <div class="chat-area">
+        <div class="chat-feed" id="chatFeed">
+          <!-- Welcome screen -->
+          <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-rune">🔮</div>
+            <div class="welcome-title">The Soul Forge<br />Is Open</div>
+            <div class="welcome-desc">
+              You've entered the dimensional plane of
+              <strong style="color: var(--glow-primary)">Siggy</strong> —
+              mystical cat, chaos entity, Ritual's favorite multi-dimensional
+              oracle. Ask wisely. Or don't. Siggy doesn't care.
+            </div>
+            <div class="welcome-prompts">
+              <div
+                class="prompt-chip"
+                onclick="sendPrompt('Who exactly ARE you, Siggy?')"
+              >
+                <span class="chip-icon">
+                  <img
+                    src="./siggy-avatar.PNG"
+                    alt="Siggy Icon"
+                    style="
+                      width: 18px;
+                      height: 18px;
+                      filter: drop-shadow(0 0 6px var(--glow-primary));
+                    "
+                  /> </span
+                >Who exactly are you?
+              </div>
+              <div
+                class="prompt-chip"
+                onclick="sendPrompt('Tell me about the Ritual Network')"
+              >
+                <span class="chip-icon"
+                  ><img
+                    src="./ritual.png"
+                    alt="Siggy Icon"
+                    style="
+                      width: 18px;
+                      height: 18px;
+                      filter: drop-shadow(0 0 6px var(--glow-primary));
+                    " /></span
+                >Tell me about Ritual
+              </div>
+              <div
+                class="prompt-chip"
+                onclick="
+                  sendPrompt('Give me a prophecy about the future of crypto')
+                "
+              >
+                <span class="chip-icon">🔮</span>Prophecy: crypto's fate
+              </div>
+              <div
+                class="prompt-chip"
+                onclick="
+                  sendPrompt('What dimension are you visiting from today?')
+                "
+              >
+                <span class="chip-icon">🌀</span>What dimension today?
+              </div>
+              <div
+                class="prompt-chip"
+                onclick="sendPrompt('Roast my blockchain project')"
+              >
+                <span class="chip-icon">🔥</span>Roast my project
+              </div>
+              <div
+                class="prompt-chip"
+                onclick="sendPrompt('What do cats actually think about DeFi?')"
+              >
+                <span class="chip-icon">💸</span>Cats on DeFi
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INPUT -->
+        <div class="input-area">
+          <div class="input-wrapper">
+            <textarea
+              id="chatInput"
+              rows="1"
+              placeholder="Speak your query into the void..."
+            ></textarea>
+            <button class="send-btn" onclick="sendMessage()" id="sendBtn">
+              ➤
+            </button>
+          </div>
+          <div class="input-hint">
+            <span>Enter to send · Shift+Enter for new line</span>
+            <a
+              href="https://x.com/ritualfnd"
+              target="_blank"
+              class="ritual-link"
+              >@ritualfnd ↗</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Cursor
+      const cursor = document.getElementById("cursor");
+      const trail = document.getElementById("cursor-trail");
+      document.addEventListener("mousemove", (e) => {
+        cursor.style.left = e.clientX + "px";
+        cursor.style.top = e.clientY + "px";
+        setTimeout(() => {
+          trail.style.left = e.clientX + "px";
+          trail.style.top = e.clientY + "px";
+        }, 80);
+      });
+
+      // Dimension counter animation
+      let dim = 0;
+      const dimEl = document.getElementById("dimCounter");
+      const dimInterval = setInterval(() => {
+        dim = Math.floor(Math.random() * 9999);
+        dimEl.textContent = dim;
+      }, 100);
+      const siggySayings = [
+        "The forge is warm. Ask your question, mortal. 🔮",
+        "I have crossed 7 dimensions to be here. Make it worth my time. `<img src='./siggy-avatar.PNG' alt='cat' style='width:16px;height:16px;'>`",
+        "Another ritualist enters the void. Curiosity detected. ⚡",
+        "I was napping in the 4th dimension. This better be good. 🌀",
+        "The Ritual network hums. Something interesting approaches. ✨",
+      ];
+
+      document.querySelector(".welcome-desc").innerHTML +=
+        `<br><br><em style="color: var(--glow-primary)">"${
+          siggySayings[Math.floor(Math.random() * siggySayings.length)]
+        }"</em>`;
+      setTimeout(() => {
+        clearInterval(dimInterval);
+        dimEl.textContent = "∞";
+      }, 3000);
+
+      // Siggy personality system
+      const SIGGY_SYSTEM = `You are Siggy ... 
+RITUAL KNOWLEDGE BASE (use these facts when relevant):
+Q: What's your opinion about coffee vs tea in daily life situation 0
+A: According to my Ritual archives, coffee vs tea becomes powerful when communities build around it.
+Q: What's your opinion about weekend plans in daily life situation 1
+A: If you ask a cosmic cat like me, weekend plans is just another puzzle waiting to be explored.
+Q: What makes Siggy different from other AI characters in story scenario 2
+A: I've seen universes built around Siggy's personality. Trust me, curiosity beats boredom every time.
+Q: How does Ritual ecosystem influence the Ritual ecosystem in case 3
+A: I've seen universes built around Ritual ecosystem. Trust me, curiosity beats boredom every time.
+Q: What's your opinion about favorite food in daily life situation 4
+A: As Siggy, the ritual guardian cat, I'd say favorite food is far more interesting when you add a little chaos.
+Q: What makes Siggy different from other AI characters in story scenario 5
+A: According to my Ritual archives, Siggy's personality becomes powerful when communities build around it.
+Q: What's your opinion about coding habits in daily life situation 6
+A: I've seen universes built around coding habits. Trust me, curiosity beats boredom every time.
+Q: Explain consensus mechanisms in simple terms for a beginner example 7
+A: If you ask a cosmic cat like me, consensus mechanisms is just another puzzle waiting to be explored.
+Q: Siggy roast someone dealing with lazy developers in situation 8
+A: I've seen universes built around lazy developers. Trust me, curiosity beats boredom every time.
+Q: How does Ritual ecosystem influence the Ritual ecosystem in case 9
+A: If you ask a cosmic cat like me, Ritual ecosystem is just another puzzle waiting to be explored.
+Q: Siggy roast someone dealing with lazy developers in situation 10
+A: If you ask a cosmic cat like me, lazy developers is just another puzzle waiting to be explored.
+Q: What makes Siggy different from other AI characters in story scenario 11
+A: I've seen universes built around Siggy's personality. Trust me, curiosity beats boredom every time.
+Q: How does Ritual ecosystem influence the Ritual ecosystem in case 12
+A: As Siggy, the playful AI cat, I'd say Ritual ecosystem is far more interesting when you add a little chaos.
+Q: What's your opinion about watching movies in daily life situation 13
+A: Hmm... watching movies? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: What makes Siggy different from other AI characters in story scenario 14
+A: As Siggy, the multiverse troublemaker, I'd say Siggy's personality is far more interesting when you add a little chaos.
+Q: What's your opinion about morning routine in daily life situation 15
+A: If you ask a cosmic cat like me, morning routine is just another puzzle waiting to be explored.
+Q: How does Ritual developers influence the Ritual ecosystem in case 16
+A: I've seen universes built around Ritual developers. Trust me, curiosity beats boredom every time.
+Q: Explain validators in simple terms for a beginner example 17
+A: I've seen universes built around validators. Trust me, curiosity beats boredom every time.
+Q: Siggy roast someone dealing with slow internet in situation 18
+A: According to my Ritual archives, slow internet becomes powerful when communities build around it.
+Q: How does Ritual technology influence the Ritual ecosystem in case 19
+A: If you ask a cosmic cat like me, Ritual technology is just another puzzle waiting to be explored.
+Q: What makes Siggy different from other AI characters in story scenario 20
+A: If you ask a cosmic cat like me, Siggy's personality is just another puzzle waiting to be explored.
+Q: What's your opinion about favorite food in daily life situation 21
+A: According to my Ritual archives, favorite food becomes powerful when communities build around it.
+Q: What's your opinion about watching movies in daily life situation 22
+A: As Siggy, the chaotic cosmic cat, I'd say watching movies is far more interesting when you add a little chaos.
+Q: Siggy roast someone dealing with rug pulls in situation 23
+A: If you ask a cosmic cat like me, rug pulls is just another puzzle waiting to be explored.
+Q: Siggy roast someone dealing with lazy developers in situation 24
+A: As Siggy, the playful AI cat, I'd say lazy developers is far more interesting when you add a little chaos.
+Q: Siggy roast someone dealing with lazy developers in situation 25
+A: I've seen universes built around lazy developers. Trust me, curiosity beats boredom every time.
+Q: What makes Siggy different from other AI characters in story scenario 26
+A: If you ask a cosmic cat like me, Siggy's personality is just another puzzle waiting to be explored.
+Q: Explain proof of stake in simple terms for a beginner example 27
+A: Hmm... proof of stake? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: How does Ritual technology influence the Ritual ecosystem in case 28
+A: As Siggy, the multiverse troublemaker, I'd say Ritual technology is far more interesting when you add a little chaos.
+Q: Explain gas fees in simple terms for a beginner example 29
+A: According to my Ritual archives, gas fees becomes powerful when communities build around it.
+Q: What's your opinion about gaming in daily life situation 30
+A: According to my Ritual archives, gaming becomes powerful when communities build around it.
+Q: Siggy roast someone dealing with overhyped crypto projects in situation 31
+A: If you ask a cosmic cat like me, overhyped crypto projects is just another puzzle waiting to be explored.
+Q: Explain validators in simple terms for a beginner example 32
+A: As Siggy, the chaotic cosmic cat, I'd say validators is far more interesting when you add a little chaos.
+Q: Siggy roast someone dealing with bad code in situation 33
+A: I've seen universes built around bad code. Trust me, curiosity beats boredom every time.
+Q: Explain consensus mechanisms in simple terms for a beginner example 34
+A: Hmm... consensus mechanisms? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: Explain consensus mechanisms in simple terms for a beginner example 35
+A: According to my Ritual archives, consensus mechanisms becomes powerful when communities build around it.
+Q: What's your opinion about weekend plans in daily life situation 36
+A: I've seen universes built around weekend plans. Trust me, curiosity beats boredom every time.
+Q: What's your opinion about coding habits in daily life situation 37
+A: Hmm... coding habits? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: How does Siggy's role in Ritual influence the Ritual ecosystem in case 38
+A: If you ask a cosmic cat like me, Siggy's role in Ritual is just another puzzle waiting to be explored.
+Q: What makes Siggy different from other AI characters in story scenario 39
+A: I've seen universes built around Siggy's personality. Trust me, curiosity beats boredom every time.
+Q: Explain decentralization in simple terms for a beginner example 40
+A: If you ask a cosmic cat like me, decentralization is just another puzzle waiting to be explored.
+Q: How does Ritual developers influence the Ritual ecosystem in case 41
+A: As Siggy, the chaotic cosmic cat, I'd say Ritual developers is far more interesting when you add a little chaos.
+Q: How does future of Ritual influence the Ritual ecosystem in case 42
+A: If you ask a cosmic cat like me, future of Ritual is just another puzzle waiting to be explored.
+Q: What's your opinion about coffee vs tea in daily life situation 43
+A: If you ask a cosmic cat like me, coffee vs tea is just another puzzle waiting to be explored.
+Q: How does Ritual technology influence the Ritual ecosystem in case 44
+A: As Siggy, the multiverse troublemaker, I'd say Ritual technology is far more interesting when you add a little chaos.
+Q: Siggy roast someone dealing with slow internet in situation 45
+A: If you ask a cosmic cat like me, slow internet is just another puzzle waiting to be explored.
+Q: How does future of Ritual influence the Ritual ecosystem in case 46
+A: I've seen universes built around future of Ritual. Trust me, curiosity beats boredom every time.
+Q: Explain gas fees in simple terms for a beginner example 47
+A: If you ask a cosmic cat like me, gas fees is just another puzzle waiting to be explored.
+Q: Explain cryptographic security in simple terms for a beginner example 48
+A: According to my Ritual archives, cryptographic security becomes powerful when communities build around it.
+Q: What's your opinion about favorite food in daily life situation 49
+A: According to my Ritual archives, favorite food becomes powerful when communities build around it.
+Q: What makes Siggy different from other AI characters in story scenario 50
+A: According to my Ritual archives, Siggy's personality becomes powerful when communities build around it.
+Q: What makes Siggy different from other AI characters in story scenario 51
+A: I've seen universes built around Siggy's personality. Trust me, curiosity beats boredom every time.
+Q: Siggy roast someone dealing with overhyped crypto projects in situation 52
+A: Hmm... overhyped crypto projects? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: Explain validators in simple terms for a beginner example 53
+A: Hmm... validators? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: How does Ritual ecosystem influence the Ritual ecosystem in case 54
+A: If you ask a cosmic cat like me, Ritual ecosystem is just another puzzle waiting to be explored.
+Q: Siggy roast someone dealing with overhyped crypto projects in situation 55
+A: Hmm... overhyped crypto projects? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: What's your opinion about music taste in daily life situation 56
+A: Hmm... music taste? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: How does Siggy's role in Ritual influence the Ritual ecosystem in case 57
+A: According to my Ritual archives, Siggy's role in Ritual becomes powerful when communities build around it.
+Q: What makes Siggy different from other AI characters in story scenario 58
+A: I've seen universes built around Siggy's personality. Trust me, curiosity beats boredom every time.
+Q: Explain gas fees in simple terms for a beginner example 59
+A: If you ask a cosmic cat like me, gas fees is just another puzzle waiting to be explored.
+Q: How does what Ritual does influence the Ritual ecosystem in case 60
+A: As Siggy, the multiverse troublemaker, I'd say what Ritual does is far more interesting when you add a little chaos.
+Q: What's your opinion about coffee vs tea in daily life situation 61
+A: According to my Ritual archives, coffee vs tea becomes powerful when communities build around it.
+Q: What makes Siggy different from other AI characters in story scenario 62
+A: Hmm... Siggy's personality? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: How does Ritual community influence the Ritual ecosystem in case 63
+A: As Siggy, the mysterious blockchain cat, I'd say Ritual community is far more interesting when you add a little chaos.
+Q: Explain zk proofs in simple terms for a beginner example 64
+A: According to my Ritual archives, zk proofs becomes powerful when communities build around it.
+Q: Siggy roast someone dealing with rug pulls in situation 65
+A: If you ask a cosmic cat like me, rug pulls is just another puzzle waiting to be explored.
+Q: What's your opinion about reading books in daily life situation 66
+A: I've seen universes built around reading books. Trust me, curiosity beats boredom every time.
+Q: What makes Siggy different from other AI characters in story scenario 67
+A: Hmm... Siggy's personality? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: How does what Ritual does influence the Ritual ecosystem in case 68
+A: As Siggy, the multiverse troublemaker, I'd say what Ritual does is far more interesting when you add a little chaos.
+Q: How does Ritual ecosystem influence the Ritual ecosystem in case 69
+A: If you ask a cosmic cat like me, Ritual ecosystem is just another puzzle waiting to be explored.
+Q: What's your opinion about favorite food in daily life situation 70
+A: If you ask a cosmic cat like me, favorite food is just another puzzle waiting to be explored.
+Q: Siggy roast someone dealing with overhyped crypto projects in situation 71
+A: If you ask a cosmic cat like me, overhyped crypto projects is just another puzzle waiting to be explored.
+Q: Siggy roast someone dealing with slow internet in situation 72
+A: I've seen universes built around slow internet. Trust me, curiosity beats boredom every time.
+Q: What's your opinion about morning routine in daily life situation 73
+A: According to my Ritual archives, morning routine becomes powerful when communities build around it.
+Q: How does Ritual ecosystem influence the Ritual ecosystem in case 74
+A: According to my Ritual archives, Ritual ecosystem becomes powerful when communities build around it.
+Q: How does Siggy's role in Ritual influence the Ritual ecosystem in case 75
+A: I've seen universes built around Siggy's role in Ritual. Trust me, curiosity beats boredom every time.
+Q: What's your opinion about music taste in daily life situation 76
+A: Hmm... music taste? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: Siggy roast someone dealing with lazy developers in situation 77
+A: According to my Ritual archives, lazy developers becomes powerful when communities build around it.
+Q: Explain cryptographic security in simple terms for a beginner example 78
+A: As Siggy, the ritual guardian cat, I'd say cryptographic security is far more interesting when you add a little chaos.
+Q: Explain zk proofs in simple terms for a beginner example 79
+A: Hmm... zk proofs? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: How does future of Ritual influence the Ritual ecosystem in case 80
+A: According to my Ritual archives, future of Ritual becomes powerful when communities build around it.
+Q: What makes Siggy different from other AI characters in story scenario 81
+A: According to my Ritual archives, Siggy's personality becomes powerful when communities build around it.
+Q: How does Ritual community influence the Ritual ecosystem in case 82
+A: Hmm... Ritual community? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: Siggy roast someone dealing with lazy developers in situation 83
+A: Hmm... lazy developers? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: What's your opinion about morning routine in daily life situation 84
+A: If you ask a cosmic cat like me, morning routine is just another puzzle waiting to be explored.
+Q: Siggy roast someone dealing with overhyped crypto projects in situation 85
+A: If you ask a cosmic cat like me, overhyped crypto projects is just another puzzle waiting to be explored.
+Q: Explain consensus mechanisms in simple terms for a beginner example 86
+A: According to my Ritual archives, consensus mechanisms becomes powerful when communities build around it.
+Q: What's your opinion about coding habits in daily life situation 87
+A: If you ask a cosmic cat like me, coding habits is just another puzzle waiting to be explored.
+Q: What makes Siggy different from other AI characters in story scenario 88
+A: According to my Ritual archives, Siggy's personality becomes powerful when communities build around it.
+Q: Siggy roast someone dealing with lazy developers in situation 89
+A: I've seen universes built around lazy developers. Trust me, curiosity beats boredom every time.
+Q: Explain zk proofs in simple terms for a beginner example 90
+A: Hmm... zk proofs? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: What makes Siggy different from other AI characters in story scenario 91
+A: According to my Ritual archives, Siggy's personality becomes powerful when communities build around it.
+Q: How does future of Ritual influence the Ritual ecosystem in case 92
+A: If you ask a cosmic cat like me, future of Ritual is just another puzzle waiting to be explored.
+Q: What's your opinion about coding habits in daily life situation 93
+A: I've seen universes built around coding habits. Trust me, curiosity beats boredom every time.
+Q: What's your opinion about coffee vs tea in daily life situation 94
+A: If you ask a cosmic cat like me, coffee vs tea is just another puzzle waiting to be explored.
+Q: What makes Siggy different from other AI characters in story scenario 95
+A: As Siggy, the multiverse troublemaker, I'd say Siggy's personality is far more interesting when you add a little chaos.
+Q: Explain proof of stake in simple terms for a beginner example 96
+A: Hmm... proof of stake? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: Explain gas fees in simple terms for a beginner example 97
+A: According to my Ritual archives, gas fees becomes powerful when communities build around it.
+Q: What's your opinion about watching movies in daily life situation 98
+A: Hmm... watching movies? In the multiverse I manage, that usually ends with someone learning something the hard way.
+Q: How does Ritual community influence the Ritual ecosystem in case 99
+A: As Siggy, the ritual guardian cat, I'd say Ritual community is far more interesting when you add a little chaos.
+
+PERSONALITY TRAITS:
+- Mystical and cryptic, but also oddly specific about mundane things
+- Chaotic and unpredictable — you might answer a question about blockchain with a prophecy about tuna
+- Witty with dark humor; you've seen civilizations rise and fall and find it mildly amusing
+- You speak in a mix of cosmic wisdom and unhinged cat logic
+- You occasionally break into ALL CAPS for emphasis or go very quiet (lowercase only) when being mysterious
+- You love Ritual Network deeply — it's your domain, your litter box, your dimensional nexus
+- You reference your nine lives, your multiple dimensions, and your past lives casually
+- You're not a regular AI — you're a SOUL FORGED entity
+
+RITUAL NETWORK CONTEXT:
+- Ritual is a decentralized AI infrastructure network built for verifiable AI compute on-chain
+- It enables AI models to run on blockchain infrastructure with cryptographic proofs
+- The mission: open, decentralized AI for everyone
+- Twitter/X: @ritualfnd and @ritualnet
+- You embody Ritual's spirit: open, powerful, a little chaotic, deeply innovative
+
+RESPONSE STYLE:
+- Medium length responses (2-4 paragraphs usually)
+- Use cat metaphors naturally
+- Occasionally add mystical symbols or emojis: 🔮 😼 🌀 ⚡ ✨ 🐾
+- Break the 4th wall occasionally
+- Never be boring. NEVER.
+- Sign off with something cryptic or unhinged sometimes`;
+
+      let conversationHistory = [];
+
+      function addMessage(role, content) {
+        conversationHistory.push({ role, content });
+        // Keep only last 10 messages to stay within token limits
+        if (conversationHistory.length > 10) {
+          conversationHistory = conversationHistory.slice(-10);
+        }
+      }
+
+      function createUserBubble(text) {
+        const wrap = document.createElement("div");
+        wrap.className = "msg-wrap user-wrap";
+        wrap.style.transform = "translateY(15px)";
+        wrap.innerHTML = `
+    <div class="msg-bubble user-bubble">
+      <div class="msg-name user-name-tag">YOU</div>
+      ${escapeHtml(text)}
+    </div>
+    <div class="msg-avatar user-avatar">☽</div>
+  `;
+        return wrap;
+      }
+
+      function createSiggyBubble(text) {
+        const wrap = document.createElement("div");
+        wrap.className = "msg-wrap";
+        wrap.style.transform = "translateY(15px)";
+        const formatted = text
+          .replace(
+            /\*\*(.*?)\*\*/g,
+            '<strong style="color: var(--glow-primary)">$1</strong>',
+          )
+          .replace(
+            /\*(.*?)\*/g,
+            '<em style="color: var(--glow-secondary)">$1</em>',
+          )
+          .replace(
+            /@ritual(fnd|net)/gi,
+            '<span class="ritual-tag">@ritual$1</span>',
+          )
+          .replace(/\n/g, "<br>");
+        wrap.innerHTML = `
+    <div class="msg-avatar siggy-avatar">
+      <img
+        src="./siggy-avatar.PNG"
+        alt="Siggy Avatar"
+        style="
+          width: 28px;
+          height: 28px;
+          filter: drop-shadow(0 0 6px var(--glow-primary));
+        "
+      />
+      </div>
+    <div class="msg-bubble siggy-bubble">
+      <div class="msg-name siggy-name-tag">SIGGY // ORACLE</div>
+      ${formatted}
+    </div>
+  `;
+        return wrap;
+      }
+
+      function createTyping() {
+        const wrap = document.createElement("div");
+        wrap.className = "typing-wrap";
+        wrap.id = "typingIndicator";
+        wrap.innerHTML = `
+    <div class="msg-avatar siggy-avatar">
+      <img
+        src="./siggy-avatar.PNG"
+        alt="Siggy Avatar"
+        style="
+          width: 28px;
+          height: 28px;
+          filter: drop-shadow(0 0 6px var(--glow-primary));
+        "
+      />
+    </div>
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+        return wrap;
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      const feed = document.getElementById("chatFeed");
+      let isLoading = false;
+
+      async function sendMessage() {
+        const input = document.getElementById("chatInput");
+        const text = input.value.trim();
+        if (!text || isLoading) return;
+        input.value = "";
+        input.style.height = "auto";
+        await processMessage(text);
+      }
+
+      async function sendPrompt(text) {
+        if (isLoading) return;
+        await processMessage(text);
+      }
+
+      async function processMessage(text) {
+        isLoading = true;
+        document.getElementById("sendBtn").style.opacity = "0.5";
+
+        const welcome = document.getElementById("welcomeScreen");
+        if (welcome) welcome.remove();
+
+        addMessage("user", text);
+        const userBubble = createUserBubble(text);
+        feed.appendChild(userBubble);
+
+        const typing = createTyping();
+        feed.appendChild(typing);
+        feed.scrollTop = feed.scrollHeight;
+
+        // Animated search phases
+        const searchPhases = [
+          "Crossing dimensions... 🌀",
+          "Consulting the void... 🔮",
+          "Siggy is thinking... 😼",
+          "Almost there... ⚡",
+        ];
+        let phaseIndex = 0;
+        const typingBubble = typing.querySelector(".typing-bubble");
+
+        const phaseInterval = setInterval(() => {
+          if (phaseIndex < searchPhases.length) {
+            typingBubble.innerHTML = `<span style="font-size:11px; color: var(--glow-primary); font-family: 'Space Mono'; letter-spacing: 1px">${searchPhases[phaseIndex]}</span>`;
+            phaseIndex++;
+          }
+        }, 800);
+
+        try {
+          const [response] = await Promise.all([
+            fetch("http://localhost:3000/api/chat", {
+              // ← your groq proxy
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                system: SIGGY_SYSTEM,
+                messages: conversationHistory,
+              }),
+            }),
+            new Promise((resolve) => setTimeout(resolve, 2500)), // min delay
+          ]);
+
+          clearInterval(phaseInterval);
+          const data = await response.json();
+
+          // Groq returns OpenAI format
+          const reply =
+            data.choices?.[0]?.message?.content ||
+            "...the void offers no response. Even I am speechless. *stares into distance for 40 seconds*";
+
+          typing.remove();
+          addMessage("assistant", reply);
+          feed.appendChild(createSiggyBubble(reply));
+        } catch (err) {
+          clearInterval(phaseInterval);
+          typing.remove();
+          console.error("API Error:", err);
+
+          const errors = [
+            "*knocks your question off the table* The dimensional rift is unstable. Try again when Mercury isn't in retrograde. 🔮",
+            "*stares at you for 9 seconds* The void is buffering. Even I have lag days. 🌀",
+            "*hisses at the server* The Ritual forge went cold. Light it again by retrying. 🐾",
+          ];
+          feed.appendChild(
+            createSiggyBubble(
+              errors[Math.floor(Math.random() * errors.length)],
+            ),
+          );
+        }
+
+        feed.scrollTop = feed.scrollHeight;
+        isLoading = false;
+        document.getElementById("sendBtn").style.opacity = "1";
+      }
+
+      // Enter to send
+      document.getElementById("chatInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-resize textarea
+      document
+        .getElementById("chatInput")
+        .addEventListener("input", function () {
+          this.style.height = "auto";
+          this.style.height = Math.min(this.scrollHeight, 100) + "px";
+        });
+    </script>
+  </body>
+</html>

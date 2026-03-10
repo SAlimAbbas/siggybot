@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+npm-debug.log
+npm-error.log
+yarn-error.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+#json and txt files 
+siggy_knowledge.txt
+siggy_ritual_training_dataset_20000.jsonl
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Misc
+.cache/
+temp/
+tmp/
