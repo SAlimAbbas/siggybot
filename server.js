@@ -45,3 +45,11 @@ app.post("/api/chat", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Siggy proxy running on port ${PORT}`));
+
+
+const RENDER_URL = "https://siggybot.onrender.com";
+setInterval(() => {
+  fetch(`${RENDER_URL}/health`)
+    .then(() => console.log("✅ Keep-alive ping sent"))
+    .catch(() => console.log("⚠️ Ping failed"));
+}, 840000); // every 14 minutes
